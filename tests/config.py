@@ -1,0 +1,3 @@
+token = '255364908:AAE9g6lPIT_Ti_xoU04JaBcXi1qR6ZB3AdU'
+
+testuser = 167921906
