@@ -172,6 +172,7 @@ class Api(object):
                               inline_message_id=None, parse_mode=None,
                               disable_web_page_preview=None, reply_markup=None):
         """ See: https://core.telegram.org/bots/api#editMessageText """
+        #TODO: Check one of (chat_id, message_id) or inline_message_id is supplied
         return await self._api_call('editMessageText', chat_id=chat_id,
                                     message_id=message_id, 
                                     inline_message_id=inline_message_id,
@@ -183,6 +184,7 @@ class Api(object):
                                  inline_message_id=None, caption=None,
                                  reply_markup=None):
         """ See: https://core.telegram.org/bots/api#editMessageCaption """
+        #TODO: Check one of (chat_id, message_id) or inline_message_id is supplied
         return await self._api_call('editMessageCaption', chat_id=chat_id,
                                     inline_message_id=inline_message_id,
                                     caption=caption, reply_markup=reply_markup)
@@ -190,6 +192,8 @@ class Api(object):
     async def editMessageReplyMarkup(self, chat_id=None, message_id=None, 
                                      inline_message_id=None, reply_markup=None):
         """ See: https://core.telegram.org/bots/api#editMessageReplyMarkup """
+
+        #TODO: Check one of (chat_id, message_id) or inline_message_id is supplied
         return await self._api_call('editMessageReplyMarkup', chat_id=chat_id,
                                     message_id=message_id, 
                                     inline_message_id=inline_message_id,
@@ -217,6 +221,7 @@ class Api(object):
         else:
             token = self.token
 
+        # Remove optional items that aren't supplied from the options
         params = {k:v for k,v in kwargs.items() if v is not None}
 
         baseurl = 'https://api.telegram.org/bot' + token + '/'
