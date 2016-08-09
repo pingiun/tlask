@@ -101,6 +101,7 @@ class Tlask(Api):
                 logger.debug(update)
                 update['params'] = {}
                 res = Sender(self, update)
+                
                 if self._middleware_stack(res, update):
                     logger.debug("Update after the middelware stack: %s",
                                  update)
