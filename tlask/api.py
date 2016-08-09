@@ -3,6 +3,8 @@ import asyncio
 
 class Api(object):
 
+    token = None
+
     def __init__(self, token=None): 
         self._offset = None
         # If api.py is used as a standalone class (e.g. not inherited by 
@@ -166,8 +168,8 @@ class Api(object):
                                     callback_query_id=callback_query_id,
                                     text=text, show_alert=show_alert)
 
-    async def editMessageText(self, chat_id=None, message_id=None,
-                              inline_message_id=None, text, parse_mode=None,
+    async def editMessageText(self, text, chat_id=None, message_id=None,
+                              inline_message_id=None, parse_mode=None,
                               disable_web_page_preview=None, reply_markup=None):
         """ See: https://core.telegram.org/bots/api#editMessageText """
         return await self._api_call('editMessageText', chat_id=chat_id,
@@ -215,9 +217,11 @@ class Api(object):
         else:
             token = self.token
 
+        params = {k:v for k,v in kwargs.items() if v is not None}
+
         baseurl = 'https://api.telegram.org/bot' + token + '/'
         async with aiohttp.ClientSession() as session:
-            async with session.get(baseurl + method, params=kwargs) as response:
+            async with session.get(baseurl + method, params=params) as response:
                 jsondata = await response.json()
                 if not response.status == 200:
                     raise Exception("Got a non {} return. Telegram error: {}".format(response.status, jsondata))
