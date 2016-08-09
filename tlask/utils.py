@@ -4,6 +4,7 @@ import sys
 import pkgutil
 import os
 
+
 def _endpoint_from_view_func(view_func):
     """
     from flask.helpers
@@ -18,6 +19,7 @@ def _endpoint_from_view_func(view_func):
     assert view_func is not None, 'expected view func if endpoint ' \
                                   'is not provided.'
     return view_func.__name__
+
 
 def import_string(import_name, silent=False):
     """
@@ -68,6 +70,7 @@ def import_string(import_name, silent=False):
     except ImportError as e:
         if not silent:
             raise
+
 
 def get_root_path(import_name):
     """

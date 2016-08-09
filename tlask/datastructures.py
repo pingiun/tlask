@@ -9,11 +9,12 @@
     :license: BSD, see LICENSE for more details.
 """
 
+
 def is_immutable(self):
     raise TypeError('%r objects are immutable' % self.__class__.__name__)
 
-class ImmutableDictMixin(object):
 
+class ImmutableDictMixin(object):
     """Makes a :class:`dict` immutable.
 
     .. versionadded:: 0.5
@@ -61,18 +62,16 @@ class ImmutableDictMixin(object):
     def clear(self):
         is_immutable(self)
 
-class ImmutableDict(ImmutableDictMixin, dict):
 
+class ImmutableDict(ImmutableDictMixin, dict):
     """An immutable :class:`dict`.
 
     .. versionadded:: 0.5
     """
 
     def __repr__(self):
-        return '%s(%s)' % (
-            self.__class__.__name__,
-            dict.__repr__(self),
-        )
+        return '%s(%s)' % (self.__class__.__name__,
+                           dict.__repr__(self),)
 
     def copy(self):
         """Return a shallow mutable copy of this object.  Keep in mind that
@@ -84,15 +83,9 @@ class ImmutableDict(ImmutableDictMixin, dict):
     def __copy__(self):
         return self
 
-
         if self.start is None:
             return '%s */%s' % (self.units, length)
-        return '%s %s-%s/%s' % (
-            self.units,
-            self.start,
-            self.stop - 1,
-            length
-        )
+        return '%s %s-%s/%s' % (self.units, self.start, self.stop - 1, length)
 
     def __nonzero__(self):
         return self.units is not None

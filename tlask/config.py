@@ -17,6 +17,7 @@ import json
 from .utils import import_string
 from ._compat import string_types, iteritems
 
+
 class ConfigAttribute(object):
     """Makes an attribute forward to the config"""
 
@@ -103,8 +104,7 @@ class Config(dict):
             raise RuntimeError('The environment variable %r is not set '
                                'and as such configuration could not be '
                                'loaded.  Set this variable and make it '
-                               'point to a configuration file' %
-                               variable_name)
+                               'point to a configuration file' % variable_name)
         return self.from_pyfile(rv, silent=silent)
 
     def from_pyfile(self, filename, silent=False):
@@ -207,9 +207,8 @@ class Config(dict):
             else:
                 mappings.append(mapping[0])
         elif len(mapping) > 1:
-            raise TypeError(
-                'expected at most 1 positional argument, got %d' % len(mapping)
-            )
+            raise TypeError('expected at most 1 positional argument, got %d' %
+                            len(mapping))
         mappings.append(kwargs.items())
         for mapping in mappings:
             for (key, value) in mapping:

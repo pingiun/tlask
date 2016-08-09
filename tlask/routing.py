@@ -13,6 +13,7 @@ _rule_re = re.compile(r'''
     >
 ''', re.VERBOSE)
 
+
 def parse_rule(rule):
     pos = 0
     end = len(rule)
@@ -29,7 +30,9 @@ def parse_rule(rule):
             raise ValueError('malformed rule: %r' % rule)
         yield None, remaining
 
+
 class Rule(object):
+
     def __init__(self, string, endpoint, **options):
         if not string.startswith('/'):
             raise ValueError("Rules must start with a trailing slash")

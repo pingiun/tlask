@@ -2,16 +2,20 @@ import sys
 sys.path.append('..')
 
 import logging
-logging.basicConfig(format='%(asctime)s (%(levelname)s)%(name)s: %(message)s', level=logging.DEBUG)
+logging.basicConfig(
+    format='%(asctime)s (%(levelname)s)%(name)s: %(message)s',
+    level=logging.DEBUG)
 
 from tlask import Tlask
 app = Tlask(__name__)
 
 
-@app.route('/') # '/' is a special name for /start, like on websites
+@app.route('/')  # '/' is a special name for /start, like on websites
 async def start(res, update):
     print(update['message']['text'])
     await res.send("Welcome!")
+
+
 """
 @app.route('/language') # Change the language of the app
 def languages(res, update):
