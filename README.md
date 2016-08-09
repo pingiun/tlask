@@ -25,8 +25,10 @@ Tlask middelware look like theirs.
 
 Flask and Werkzeug code: BSD licence 
 
-Tlask code: MIT licence, see
-[LICENCE](https://github.com/pingiun/tlask/blob/master/LICENSE.md)
+Tlask code: MIT licence 
+
+See [LICENCE](https://github.com/pingiun/tlask/blob/master/LICENSE.md) for more
+information.
 
 ## TODO
 - Implement routing
