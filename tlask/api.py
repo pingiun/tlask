@@ -3,15 +3,14 @@ import asyncio
 
 class Api(object):
 
-    token = None
-
     def __init__(self, token=None): 
         self._offset = None
         # If api.py is used as a standalone class (e.g. not inherited by 
         # something that has a config), self._token is used for the token. 
-        self._token = token
+        if token:
+            self.token = token
 
-    async def getUpdates(self, offset=None, timeout=10):
+    async def getUpdates(self, offset=None, timeout=20):
         """ See: https://core.telegram.org/bots/api#getUpdates """
         if not offset:
             offset = self._offset
@@ -214,17 +213,12 @@ class Api(object):
 
     async def _api_call(self, method, **kwargs):
         if not self.token:
-            if not self._token:
-                raise Exception("Telegram token not set")
-            else:
-                token = self._token
-        else:
-            token = self.token
+            raise Exception("Telegram token not set")
 
         # Remove optional items that aren't supplied from the options
         params = {k:v for k,v in kwargs.items() if v is not None}
 
-        baseurl = 'https://api.telegram.org/bot' + token + '/'
+        baseurl = 'https://api.telegram.org/bot' + self.token + '/'
         async with aiohttp.ClientSession() as session:
             async with session.get(baseurl + method, params=params) as response:
                 jsondata = await response.json()
