@@ -1,4 +1,7 @@
 # Tlask
+![Travis Status](https://travis-ci.org/pingiun/tlask.svg?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/pingiun/tlask/badge.svg?branch=master)](https://coveralls.io/github/pingiun/tlask?branch=master)
+
 This will be a Telegram bot API for Python. Right now it doesn't work yet. I'll 
 focus on supporting Python 3.5 first, and if that works the way it should, 
 maybe I will make the library compatible with other Python versions.
