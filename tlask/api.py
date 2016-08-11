@@ -64,7 +64,7 @@ class Api(object):
             disable_notification=disable_notification)
 
     async def _send_by_id_or_file(self, method, file, **kwargs):
-        if type(file[1]) == str:
+        if type(file[0]) == str:
             arg = {file[1]: file[0]}
             return await self._api_call(method, **arg, **kwargs)
         else:
