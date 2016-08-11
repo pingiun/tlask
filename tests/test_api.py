@@ -105,8 +105,7 @@ async def test_send_profile_photo_by_file(api):
         await api.download_file(photos['photos'][0][-1]['file_id'], f)
 
     with open(filename, 'rb') as f:
-        await api._api_call_upload(
-            'sendPhoto',
+        await api.sendPhoto(
             chat_id=str(config.testuser),
             photo=f,
             caption="I downloaded your profile photo",
