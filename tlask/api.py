@@ -1,9 +1,13 @@
 import aiohttp
 import asyncio
 
+from aiohttp.helpers import FormData
+
+import logging
+logger = logging.getLogger('tlask.api')
+
 
 class Api(object):
-
     def __init__(self, token=None):
         self._offset = None
         # If api.py is used as a standalone class (e.g. not inherited by 
@@ -59,16 +63,29 @@ class Api(object):
             message_id=message_id,
             disable_notification=disable_notification)
 
+    async def _send_by_id_or_file(self, method, file, **kwargs):
+        if type(file[1]) == str:
+            arg = {file[1]: file[0]}
+            return await self._api_call(method, **arg, **kwargs)
+        else:
+            arg = {file[1]: file[0]}
+            return await self._api_call_upload(method, **arg, **kwargs)
+
     async def sendPhoto(self,
                         chat_id,
                         photo,
-                        caption,
+                        caption=None,
                         disable_notification=None,
                         reply_to_message_id=None,
                         reply_markup=None):
         """ See: https://core.telegram.org/bots/api#sendPhoto """
-
-        pass  #TODO
+        return await self._send_by_id_or_file(
+            'sendPhoto', [photo, 'photo'],
+            chat_id=chat_id,
+            caption=caption,
+            disable_notification=disable_notification,
+            reply_to_message_id=reply_to_message_id,
+            reply_markup=reply_markup)
 
     async def sendAudio(self,
                         chat_id,
@@ -80,7 +97,16 @@ class Api(object):
                         reply_to_message_id=None,
                         reply_markup=None):
         """ See: https://core.telegram.org/bots/api#sendAudio """
-        pass  #TODO
+        return await self._send_by_id_or_file(
+            'sendAudio', [audio, 'audio'],
+            chat_id=chat_id,
+            caption=caption,
+            duration=duration,
+            performer=performer,
+            title=title,
+            disable_notification=disable_notification,
+            reply_to_message_id=reply_to_message_id,
+            reply_markup=reply_markup)
 
     async def sendDocument(self,
                            chat_id,
@@ -90,7 +116,13 @@ class Api(object):
                            reply_to_message_id=None,
                            reply_markup=None):
         """ See: https://core.telegram.org/bots/api#sendDocument """
-        pass  #TODO
+        return await self._send_by_id_or_file(
+            'sendDocument', [document, 'document'],
+            chat_id=chat_id,
+            caption=caption,
+            disable_notification=disable_notification,
+            reply_to_message_id=reply_to_message_id,
+            reply_markup=reply_markup)
 
     async def sendSticker(self,
                           chat_id,
@@ -100,7 +132,13 @@ class Api(object):
                           reply_to_message_id=None,
                           reply_markup=None):
         """ See: https://core.telegram.org/bots/api#sendSticker """
-        pass  #TODO
+        return await self._send_by_id_or_file(
+            'sendSticker', [sticker, 'sticker'],
+            chat_id=chat_id,
+            caption=caption,
+            disable_notification=disable_notification,
+            reply_to_message_id=reply_to_message_id,
+            reply_markup=reply_markup)
 
     async def sendVideo(self,
                         chat_id,
@@ -113,7 +151,13 @@ class Api(object):
                         reply_to_message_id=None,
                         reply_markup=None):
         """ See: https://core.telegram.org/bots/api#sendVideo """
-        pass  #TODO
+        return await self._send_by_id_or_file(
+            'sendVideo', [sticker, 'sticker'],
+            chat_id=chat_id,
+            caption=caption,
+            disable_notification=disable_notification,
+            reply_to_message_id=reply_to_message_id,
+            reply_markup=reply_markup)
 
     async def sendVoice(self,
                         chat_id,
@@ -123,7 +167,13 @@ class Api(object):
                         reply_to_message_id=None,
                         reply_markup=None):
         """ See: https://core.telegram.org/bots/api#sendVoice """
-        pass  #TODO
+        return await self._send_by_id_or_file(
+            'sendVoice', [voice, 'voice'],
+            chat_id=chat_id,
+            caption=caption,
+            disable_notification=disable_notification,
+            reply_to_message_id=reply_to_message_id,
+            reply_markup=reply_markup)
 
     async def sendLocation(self,
                            chat_id,
@@ -191,7 +241,10 @@ class Api(object):
     async def getUserProfilePhotos(self, user_id, offset=None, limit=None):
         """ See: https://core.telegram.org/bots/api#getUserProfilePhotos """
         return await self._api_call(
-            'getUserProfilePhotos', user_id=user_id, offset=offset, limit=limit)
+            'getUserProfilePhotos',
+            user_id=user_id,
+            offset=offset,
+            limit=limit)
 
     async def getFile(self, file_id):
         """ See: https://core.telegram.org/bots/api#getFile """
@@ -310,17 +363,71 @@ class Api(object):
 
     async def _api_call(self, method, **kwargs):
         if not self.token:
-            raise Exception("Telegram token not set")
+            raise RuntimeError("Telegram token not set")
 
 # Remove optional items that aren't supplied from the options
         params = {k: v for k, v in kwargs.items() if v is not None}
 
         baseurl = 'https://api.telegram.org/bot' + self.token + '/'
         async with aiohttp.ClientSession() as session:
-            async with session.get(baseurl + method, params=params) as response:
-                jsondata = await response.json()
+            async with session.get(baseurl + method,
+                                   params=params) as response:
                 if not response.status == 200:
-                    raise Exception(
-                        "Got a non {} return. Telegram error: {}".format(
-                            response.status, jsondata))
+                    responsetext = await response.text()
+                    raise RuntimeError(
+                        "Got a {} return status. Telegram error: {}".format(
+                            response.status, responsetext))
+                jsondata = await response.json()
+                return jsondata['result']
+
+    async def download_file(self, file_id, dest):
+        #TODO: Implement caching
+        if not self.token:
+            raise RuntimeError("Telegram token not set")
+
+        file = await self.getFile(file_id=file_id)
+        baseurl = 'https://api.telegram.org/file/bot' + self.token + '/'
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(baseurl + file['file_path']) as response:
+                if not response.status == 200:
+                    responsetext = await response.text()
+                    raise RuntimeError(
+                        "Got a {} return status. Response content: {}".format(
+                            response.status, responsetext))
+                chunk_size = 1024
+                if type(dest) == 'str':
+                    with open(dest, 'wb') as f:
+                        while True:
+                            chunk = await response.content.read(chunk_size)
+                            if not chunk:
+                                break
+                            f.write(chunk)
+                else:
+                    while True:
+                        chunk = await response.content.read(chunk_size)
+                        if not chunk:
+                            break
+                        dest.write(chunk)
+
+    async def _api_call_upload(self, method, **kwargs):
+        if not self.token:
+            raise RuntimeError("Telegram token not set")
+        data = FormData()
+        for k, v in kwargs.items():
+            if v is not None:  # Ints and bools need to be converted to strings, but files not
+                if type(v) != str and not hasattr(v, 'read'):
+                    v = str(v)
+                data.add_field(k, v)
+
+        baseurl = 'https://api.telegram.org/bot' + self.token + '/'
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(baseurl + method, data=data) as response:
+                if not response.status == 200:
+                    responsetext = await response.text()
+                    raise RuntimeError(
+                        "Got a {} return status. Telegram error: {}".format(
+                            response.status, responsetext))
+                jsondata = await response.json()
                 return jsondata['result']
