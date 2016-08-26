@@ -1,5 +1,6 @@
 import aiohttp
 import asyncio
+import json
 
 from aiohttp.helpers import FormData
 
@@ -100,7 +101,6 @@ class Api(object):
         return await self._send_by_id_or_file(
             'sendAudio', [audio, 'audio'],
             chat_id=chat_id,
-            caption=caption,
             duration=duration,
             performer=performer,
             title=title,
@@ -152,7 +152,7 @@ class Api(object):
                         reply_markup=None):
         """ See: https://core.telegram.org/bots/api#sendVideo """
         return await self._send_by_id_or_file(
-            'sendVideo', [sticker, 'sticker'],
+            'sendVideo', [video, 'video'],
             chat_id=chat_id,
             caption=caption,
             disable_notification=disable_notification,
@@ -365,8 +365,15 @@ class Api(object):
         if not self.token:
             raise RuntimeError("Telegram token not set")
 
-# Remove optional items that aren't supplied from the options
-        params = {k: v for k, v in kwargs.items() if v is not None}
+        # Remove optional items that aren't supplied from the options
+        #params = {k: v for k, v in kwargs.items() if v is not None}
+        params = {}
+
+        for k, v in kwargs.items():
+            if v is not None:
+                if type(v) == dict:
+                    v = json.dumps(v)
+                params[k] = v
 
         baseurl = 'https://api.telegram.org/bot' + self.token + '/'
         async with aiohttp.ClientSession() as session:
@@ -415,7 +422,10 @@ class Api(object):
             raise RuntimeError("Telegram token not set")
         data = FormData()
         for k, v in kwargs.items():
-            if v is not None:  # Ints and bools need to be converted to strings, but files not
+            if v is not None:  
+                # Ints and bools need to be converted to strings, but files not
+                if type(v) == dict:
+                    v = json.dumps(v)
                 if type(v) != str and not hasattr(v, 'read'):
                     v = str(v)
                 data.add_field(k, v)
