@@ -271,16 +271,62 @@ async def test_answerInlineQuery(api):
                       {'message_text': 'https://google.com'},
                       'url': 'https://google.com'}])
 
+
 @pytest.mark.asyncio
 async def test_fail_with_no_token():
     with pytest.raises(RuntimeError) as error:
         from tlask.api import Api
         api = Api()
         await api.getMe()
-        assert error.value.message == "Telegram token not set"
+    assert str(error.value) == "Telegram token not set"
 
 
 @pytest.mark.asyncio
 async def test_getChatMember(api):
     assert await api.getChatMember(config.testchat,
                                    221425031)  # One of the test bots
+
+
+@pytest.mark.asyncio
+async def test_fail_download_with_no_token():
+    with pytest.raises(RuntimeError) as error:
+        from tlask.api import Api
+        api = Api()
+        await api.download_file(3, 'hoi')
+    assert str(error.value) == "Telegram token not set"
+
+
+@pytest.mark.asyncio
+async def test_fail_download_invalid_file(api):
+    with pytest.raises(RuntimeError) as error:
+        await api.download_file('fileid', 'dest')
+    assert str(
+        error.
+        value) == 'Got a 400 return status. Telegram error: {"ok":false,"error_code":400,"description":"Bad Request: invalid file id"}'
+
+
+@pytest.mark.asyncio
+async def test_download_profile_photo_by_file_to_filename(api):
+    photos = await api.getUserProfilePhotos(config.testuser, limit=1)
+    assert photos['photos']
+
+    filename = 'tempfile.jpg'
+    await api.download_file(photos['photos'][0][-1]['file_id'], filename)
+
+
+@pytest.mark.asyncio
+async def test_fail_upload_with_no_token():
+    with pytest.raises(RuntimeError) as error:
+        from tlask.api import Api
+        api = Api()
+        await api._api_call_upload('error')
+    assert str(error.value) == "Telegram token not set"
+
+
+@pytest.mark.asyncio
+async def test_fail_upload(api):
+    with pytest.raises(RuntimeError) as error:
+        await api._api_call_upload('error')
+    assert str(
+        error.
+        value) == 'Got a 404 return status. Telegram error: {"ok":false,"error_code":404,"description":"Not Found: method not found"}'

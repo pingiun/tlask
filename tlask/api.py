@@ -403,7 +403,7 @@ class Api(object):
                         "Got a {} return status. Response content: {}".format(
                             response.status, responsetext))
                 chunk_size = 1024
-                if type(dest) == 'str':
+                if type(dest) == str:
                     with open(dest, 'wb') as f:
                         while True:
                             chunk = await response.content.read(chunk_size)
