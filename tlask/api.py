@@ -170,7 +170,6 @@ class Api(object):
         return await self._send_by_id_or_file(
             'sendVoice', [voice, 'voice'],
             chat_id=chat_id,
-            caption=caption,
             disable_notification=disable_notification,
             reply_to_message_id=reply_to_message_id,
             reply_markup=reply_markup)
@@ -323,6 +322,7 @@ class Api(object):
         return await self._api_call(
             'editMessageCaption',
             chat_id=chat_id,
+            message_id=message_id,
             inline_message_id=inline_message_id,
             caption=caption,
             reply_markup=reply_markup)
@@ -362,11 +362,11 @@ class Api(object):
             switch_pm_parameter=switch_pm_parameter)
 
     async def _api_call(self, method, **kwargs):
-        if not self.token:
+        if not hasattr(self, 'token'):
             raise RuntimeError("Telegram token not set")
 
-        # Remove optional items that aren't supplied from the options
-        #params = {k: v for k, v in kwargs.items() if v is not None}
+# Remove optional items that aren't supplied from the options
+#params = {k: v for k, v in kwargs.items() if v is not None}
         params = {}
 
         for k, v in kwargs.items():
@@ -389,7 +389,7 @@ class Api(object):
 
     async def download_file(self, file_id, dest):
         #TODO: Implement caching
-        if not self.token:
+        if not hasattr(self, 'token'):
             raise RuntimeError("Telegram token not set")
 
         file = await self.getFile(file_id=file_id)
@@ -418,11 +418,11 @@ class Api(object):
                         dest.write(chunk)
 
     async def _api_call_upload(self, method, **kwargs):
-        if not self.token:
+        if not hasattr(self, 'token'):
             raise RuntimeError("Telegram token not set")
         data = FormData()
         for k, v in kwargs.items():
-            if v is not None:  
+            if v is not None:
                 # Ints and bools need to be converted to strings, but files not
                 if type(v) == dict:
                     v = json.dumps(v)
