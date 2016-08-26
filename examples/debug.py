@@ -4,6 +4,8 @@ import asyncio
 
 import sys
 sys.path.append('..')
+#import codecs
+#sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
 
 from tlask.api import Api
 
