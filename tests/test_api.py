@@ -166,6 +166,7 @@ async def test_sendVideo(api):
             chat_id=config.testuser, video=f, disable_notification=True
         ) is not None
 
+
 @pytest.mark.asyncio
 async def test_sendVoice(api):
     with open(os.path.join('tests', 'assets', 'sample_sound.ogg'), 'rb') as f:
@@ -173,56 +174,102 @@ async def test_sendVoice(api):
             chat_id=config.testuser, voice=f, disable_notification=True
         ) is not None
 
+
 @pytest.mark.asyncio
 async def test_kickChatMember(api):
-    with pytest.raises(RuntimeError): #Should be a more specific error in the future
-        await api.kickChatMember(chat_id=-1001013634148, user_id=config.testuser)
+    with pytest.raises(
+            RuntimeError):  #Should be a more specific error in the future
+        await api.kickChatMember(
+            chat_id=-1001013634148, user_id=config.testuser)
+
 
 @pytest.mark.asyncio
 async def test_leaveChat(api):
     with pytest.raises(RuntimeError):
         await api.leaveChat(chat_id=-1001013634148)
 
+
 @pytest.mark.asyncio
 async def test_unbanChatMember(api):
     with pytest.raises(RuntimeError):
-        await api.unbanChatMember(chat_id=-1001013634148, user_id=config.testuser)
+        await api.unbanChatMember(
+            chat_id=-1001013634148, user_id=config.testuser)
+
 
 @pytest.mark.asyncio
 async def test_getChat(api):
     assert await api.getChat(chat_id=config.testchat) is not None
 
+
 @pytest.mark.asyncio
 async def test_getChatAdministrators(api):
     assert await api.getChatAdministrators(chat_id=config.testchat) is not None
+
 
 @pytest.mark.asyncio
 async def test_getChatMembersCount(api):
     assert await api.getChatMembersCount(chat_id=config.testchat) is not None
 
+
 @pytest.mark.asyncio
 async def test_editMessageText(api):
-    message = await api.sendMessage(config.testchat, "Test", disable_notification=True)
+    message = await api.sendMessage(
+        config.testchat, "Test", disable_notification=True)
     message_id = message['message_id']
-    assert await api.editMessageText(text="Test done", chat_id=config.testchat, message_id=message_id) is not None
+    assert await api.editMessageText(
+        text="Test done", chat_id=config.testchat, message_id=message_id
+    ) is not None
+
 
 @pytest.mark.asyncio
 async def test_editMessageCaption(api):
     with open(os.path.join('tests', 'assets', 'sample_photo.jpg'), 'rb') as f:
-        message = await api.sendPhoto(config.testchat, photo=f, caption="Test", disable_notification=True)
+        message = await api.sendPhoto(
+            config.testchat,
+            photo=f,
+            caption="Test",
+            disable_notification=True)
         message_id = message['message_id']
-        assert await api.editMessageCaption(chat_id=config.testchat, message_id=message_id, caption="Test done")
+        assert await api.editMessageCaption(
+            chat_id=config.testchat,
+            message_id=message_id,
+            caption="Test done")
+
 
 @pytest.mark.asyncio
 async def test_editMessageReplyMarkup(api):
-    message = await api.sendMessage(config.testchat, "Test", reply_markup={'inline_keyboard': [[{'text': 'Test', 'url': 'https://google.com'}]]}, disable_notification=True)
+    message = await api.sendMessage(
+        config.testchat,
+        "Test",
+        reply_markup={'inline_keyboard': [[{'text': 'Test',
+                                            'url': 'https://google.com'}]]},
+        disable_notification=True)
     message_id = message['message_id']
-    assert await api.editMessageReplyMarkup(chat_id=config.testchat, message_id=message_id, reply_markup={'inline_keyboard': [[{'text': 'Test done', 'url': 'https://en.wikipedia.org'}]]})
+    assert await api.editMessageReplyMarkup(
+        chat_id=config.testchat,
+        message_id=message_id,
+        reply_markup={'inline_keyboard':
+                      [[{'text': 'Test done',
+                         'url': 'https://en.wikipedia.org'}]]})
+
 
 @pytest.mark.asyncio
 async def test_answerCallbackQuery(api):
     with pytest.raises(RuntimeError):
         await api.answerCallbackQuery(callback_query_id=3)
+
+
+@pytest.mark.asyncio
+async def test_answerInlineQuery(api):
+    with pytest.raises(RuntimeError):
+        await api.answerInlineQuery(
+            inline_query_id=3,
+            results=[{'type': 'article',
+                      'id': 1,
+                      'title': 'google',
+                      'input_message_content':
+                      {'message_text': 'https://google.com'},
+                      'url': 'https://google.com'}])
 
 @pytest.mark.asyncio
 async def test_fail_with_no_token():
@@ -231,3 +278,9 @@ async def test_fail_with_no_token():
         api = Api()
         await api.getMe()
         assert error.value.message == "Telegram token not set"
+
+
+@pytest.mark.asyncio
+async def test_getChatMember(api):
+    assert await api.getChatMember(config.testchat,
+                                   221425031)  # One of the test bots

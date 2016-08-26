@@ -371,7 +371,7 @@ class Api(object):
 
         for k, v in kwargs.items():
             if v is not None:
-                if type(v) == dict:
+                if type(v) == dict or type(v) == list:
                     v = json.dumps(v)
                 params[k] = v
 
@@ -424,7 +424,7 @@ class Api(object):
         for k, v in kwargs.items():
             if v is not None:
                 # Ints and bools need to be converted to strings, but files not
-                if type(v) == dict:
+                if type(v) == dict or type(v) == list:
                     v = json.dumps(v)
                 if type(v) != str and not hasattr(v, 'read'):
                     v = str(v)
