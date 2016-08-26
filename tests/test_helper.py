@@ -12,4 +12,4 @@ def sender():
 
 @pytest.mark.async
 async def test_sender_send(sender):
-    sender.send("Test")
+    await sender.send("Test")
