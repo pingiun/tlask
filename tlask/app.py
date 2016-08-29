@@ -50,6 +50,8 @@ class Tlask(Api):
         self.view_functions = {}
 
         self._middlewares = []
+        
+        self.eventloop = asyncio.get_event_loop()
 
         for middelware in self.config['MIDDLEWARES']:
             self.use(middelware)
@@ -69,14 +71,21 @@ class Tlask(Api):
 
         return decorator
 
-    def add_url_rule(self, rule, endpoint=None, view_func=None, **options):
+    @property
+    def commands(self):
+        return [rule.help if rule.flavor == 'message' else '' for rule in self.url_map]
+
+    def add_url_rule(self, rule, endpoint=None, view_func=None, flavor='message', **options):
         if endpoint is None:
             endpoint = _endpoint_from_view_func(view_func)
         options['endpoint'] = endpoint
 
         logger.debug("Adding rule %s to the map", rule)
-
-        rule = self.url_rule_class(rule, **options)
+        
+        if rule == '/':
+            rule = '/start' 
+        
+        rule = self.url_rule_class(rule, flavor=flavor, **options)
         self.url_map.append(rule)
 
         if view_func is not None:
@@ -106,14 +115,19 @@ class Tlask(Api):
                     logger.debug("Update after the middelware stack: %s",
                                  update)
 
-                    if 'message' in update:
-                        for rule in self.url_map:
-                            if rule.match(update):
+                    matched = False
+                    for rule in self.url_map:
+                        if rule.match(update, self.me):
+                            if 'message' in update:
                                 logger.info("%s - %s",
                                             update['message']['chat']['id'],
                                             update['message']['text'])
-                                await self.view_functions[rule.endpoint](
-                                    res, update, **update['params'])
+                            await self.view_functions[rule.endpoint](
+                                res, update, **update['params'])
+                            matched = True
+                            break
+                    if matched == False:
+                        logger.warning("This update wasn't matched: %s", str(update))
                 else:
                     logger.debug("Some middelware took the update")
 
@@ -130,11 +144,17 @@ class Tlask(Api):
             self._middleware_stack = functools.partial(
                 middleware, sub=self._middleware_stack)
 
+    async def _setup_me(self):
+        self.me = await self.getMe()
+
     def run(self, token=None):
         if token:
             self.token = token
 
         self._build_middelware_stack()
-        self.eventloop = asyncio.get_event_loop()
+        
+        self.eventloop.run_until_complete(self._setup_me())
+        for rule in self.url_map:
+            rule.compile(self.me)
         self.eventloop.create_task(self.routing_loop())
         self.eventloop.run_forever()

@@ -4,6 +4,22 @@ import sys
 import pkgutil
 import os
 
+def get_flavor(update):
+    for key in update.keys():
+        if key != 'update_id' and key != 'params':
+            return key
+
+def get_text(update, flavor):
+    if flavor == 'message' or flavor == 'edited_message':
+        return update['message']['text']
+    elif flavor == 'callback_query':
+        return update['callback_query']['data']
+    elif flavor == 'inline_query':
+        return update['inline_query']['query']
+    elif flavor == 'chosen_inline_result':
+        return update['chosen_inline_result']['query']
+    else:
+        raise RuntimeError("Bad flavor: " + flavor)
 
 def _endpoint_from_view_func(view_func):
     """
