@@ -57,10 +57,7 @@ def build_match_string(update, me):
         chattype = update['callback_query']['message']['chat']['type']
     else:
         chattype = 'private'
-    if text.endswith('@' + me['username']):
-        return flavor + '/' + chattype + text
-    else:
-        return flavor + '/' + chattype + text + '@'
+    return flavor + '/' + chattype + text.replace('@' + me['username'], '')
 
 class Rule(object):
 
@@ -113,7 +110,7 @@ class Rule(object):
                     logger.debug("Converter for %s is %s", variable, static)
                     self.converters[variable] = static
 
-        regex_parts.append('(?P<extra>.*)@(?P<username>' + me['username'] + ')?')
+        regex_parts.append('(?P<extra>.*)')
 
         regex = r'^{}$'.format(''.join(regex_parts))
         logger.debug("Regex for rule %s: %s", self.rule, regex)
@@ -135,7 +132,6 @@ class Rule(object):
             for variable in data:
                 if variable in self.converters:
                     data[variable] = self._convert(self.converters[variable], data[variable])
-            del data['username']
             getextra = self._options.get('getextra', None)
             if not getextra and 'extra' in data:
                 del data['extra']

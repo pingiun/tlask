@@ -5,19 +5,30 @@ import pkgutil
 import os
 
 def get_flavor(update):
+    for specialmessage in ['new_chat_member', 'left_chat_member', 'new_chat_title',
+    'new_chat_photo', 'delete_chat_photo', 'group_chat_created', 'supergroup_chat_created',
+    'channel_chat_created', 'migrate_to_chat_id', 'migrate_from_chat_id', 'pinned_message']:
+        if 'message' in update:
+            if specialmessage in update['message']:
+                return 'special'
     for key in update.keys():
         if key != 'update_id' and key != 'params':
             return key
 
 def get_text(update, flavor):
     if flavor == 'message' or flavor == 'edited_message':
-        return update['message']['text']
+        if 'text'in update['message']:
+            return update['message']['text']
+        else:
+            return 'nontext'
     elif flavor == 'callback_query':
         return update['callback_query']['data']
     elif flavor == 'inline_query':
         return update['inline_query']['query']
     elif flavor == 'chosen_inline_result':
         return update['chosen_inline_result']['query']
+    elif flavor == 'special':
+        return 'special'
     else:
         raise RuntimeError("Bad flavor: " + flavor)
 
