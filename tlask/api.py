@@ -384,7 +384,11 @@ class Api(object):
                     raise RuntimeError(
                         "Got a {} return status. Telegram error: {}".format(
                             response.status, responsetext))
-                jsondata = await response.json()
+                try:
+                    jsondata = await response.json()
+                except json.decoder.JSONDecodeError:
+                    responsetext = await response.text()
+                    raise RuntimeError("Got a non JSON document: {}".format(responsetext))
                 return jsondata['result']
 
     async def download_file(self, file_id, dest):
